@@ -1,0 +1,500 @@
+53cf68736a5671ad005b40ea7a135af788361a3d
+
+
+
+video capture:
+- importing numpy fails inside of numpy when using imu seemingly
+- otherwise with --force-no-imu IT WORKS
+IF YOU INTERRUPT PYTHON WITH CTRL C WHILE IT IS IMPORTING a file like numpy then it will error out as if that import failed but really it didn't!!!!!!!!!: for example:
+```
+ImportError: numpy.core.multiarray failed to import
+    File: "�"
+    Line: 127
+    p��
+    ^
+Traceback:
+  [01] driver/videoCapture.py: 3
+    import cv2
+Main dispatch queue waiting for next function...
+^CCaught signal 2. Stopping current main dispatch queue task...
+```
+
+
+
+
+
+
+
+--
+drop test commands:
+
+VIDEO CAPTURE:
+./subscale_exe_debug --video-capture  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 2000
+
+SIFT PI:
+./subscale_exe_debug --time-for-main-stabilization 2000  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 0
+
+sift test:
+/sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission
+
+
+-- new commands:
+
+PREPARE:
+./launch.sh subscale2_goodMostly
+
+
+--tips for mophie
+SWAP TO THE battery icon port in usb for full power to lora so it doesnt hang etc.
+
+
+
+
+
+
+
+-- post subscale 2 launch
+the problem: video capture testing timing was enabled
+altitude offset: 50 feet (constant, since actual apogee was 1181 (brian); we got 1133. on the ground we had 614, and ethan's phone said 660-670.
+
+ADD TO the checklist: check timing of SIFT pi and the IMU pi
+
+cd dataOutput
+ls -t | head -n 26 | xargs tar --xattrs --acls --preserve-permissions -H posix --use-compress-program='gzip -9' -cf "../filesaaa.tar.gz" && echo $? # <-- Use instead    #ls -t | head -n 26 | xargs tar --xattrs --acls --preserve-permissions -H posix --use-compress-program='gzip' -cf "../filesaaa.gzip" && echo $?
+ls -t | head -n 26 | xargs -i{} -n 1 find {} -exec stat {} \; > ../ctimes.txt
+
+final gzip: tar --use-compress-program='gzip -9' -cf ./subscale2_data.tar.gz ./files*.gzip ./ctimes*
+
+
+
+
+-- preparing for fullscale1: testing commands:
+
+./subscale_exe_debug --time-for-main-stabilization 2000  --backup-takeoff-time 10000000  --main-deployment-g-force 1.5  --imu-data-source-path Data/subscale2/SIFT/LOG_20220130_014355.csv --time-to-main-deployment 100000 --main-descent-time 10000 --verbose --imu-data-source-time-offset 374000
+
+driver/fore.py 0 0.500000 10000 driver/LIS331HH_calibration/LOG_20220129-183224.csv 20000
+
+
+./subscale_exe_debug --time-for-main-stabilization 2000  --backup-takeoff-time 10000000  --main-deployment-g-force 0.5  --imu-data-source-path Data/subscale2/SIFT/LOG_20220130_014355.csv --time-to-main-deployment 100000 --main-descent-time 10000 --verbose --imu-data-source-time-offset 374000 --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--video-file-data-source --video-file-data-source-path /home/pi/VanderbiltRocketTeam/dataOutput/2022-01-30_01_50_07_CST/output.mp4'
+
+work towards a feb 19th launch date.
+
+make -j5 sift_exe_release_commandLine subscale_exe_release
+
+-- new drop test commands:
+
+SIFT PI:
+./subscale_exe_debug --takeoff-g-force 0 --time-for-main-stabilization 0  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 0 --main-descent-time 999999999999 --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--fps 10'
+
+
+./subscale_exe_debug --takeoff-g-force 0 --time-for-main-stabilization 0  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 0 --main-descent-time 10000 --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--fps 30 --save-every-n-seconds -1'
+
+./subscale_exe_debug --takeoff-g-force 0 --time-for-main-stabilization 0  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 0 --main-descent-time 10000 --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--fps 6'
+
+./subscale_exe_debug --takeoff-g-force 0 --time-for-main-stabilization 0  --backup-takeoff-time 0  --main-deployment-g-force 1.5 --time-to-main-deployment 0 --main-descent-time 15000 --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--fps 6 --save-every-n-seconds -1' 2>&1 | tee "./dataOutput/$(date +"%Y_%m_%d_%I_%M_%S_%p").$mode""log.txt"
+start, then 4 second countdown: 4 3 2 1 throw
+
+./subscale_exe_debug --imu-record-only
+#[nvm, the above does video capture already even though it shouldnt] python3 driver/videoCapture.py # with no flush: replace `if duration.total_seconds() >= 2` with `if duration.total_seconds() >= 1111111112`
+
+/home/pi/VanderbiltRocketTeam/dataOutput/2022-02-13_14_24_00_CST/live0.mp4
+/home/pi/VanderbiltRocketTeam/dataOutput/2022-02-13_15_38_04_CST/live0.mp4
+
+
+./dataOutput/LOG_20220213_155631.csv
+
+/home/pi/VanderbiltRocketTeam/dataOutput/2022-02-13_15_56_32_/outpy02_13_2022_15_56_32.mp4
+/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220213_155631.csv is for the above
+
+camera shatterred/corrupt halfway down:
+/home/pi/VanderbiltRocketTeam/dataOutput/2022-02-13_16_05_06_/outpy02_13_2022_16_05_06.mp4
+/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220213_160504.csv
+
+
+--- fullscale
+
+time for main stabilization: 10 seconds
+descent total: 38.5 seconds
+time to main deployment: 67.5
+
+LOOKUP TABLE
++-----------------------------+-------------------------+-------------------------+
+|command-line arg             |Sebastian/Ethan-readable |Value in milliseconds    |
+|                             |                         |                         |
++-----------------------------+-------------------------+-------------------------+
+|--time-for-main-stabilization|Stabalization time after |10,000                   |
+|                             |main deployment          |                         |
++-----------------------------+-------------------------+-------------------------+
+|--time-to-main-deployment    |Time to main deployment  |67,500                   |
+|                             |                         |                         |
++-----------------------------+-------------------------+-------------------------+
+|--backup-takeoff-time        |Time we sleep for when   |30,000                   |
+|                             |IMU fails on the pad or  |                         |
+|                             |right when takeoff       |                         |
+|                             |happens                  |                         |
++-----------------------------+-------------------------+-------------------------+
+|--main-descent-time 	      |This time is how long to |                         |
+|                             |run SIFT. We likely want |                         |
+|                             |to stop SIFT before it   |                         |
+|                             |hits the ground          |                         |
++-----------------------------+-------------------------+-------------------------+
+|                             |                         |                         |
+|                             |                         |                         |
++-----------------------------+-------------------------+-------------------------+
+
+
+pink in video = not connected to a pull down resistor
+
+--- more testing
+
+full sift + driver/imu test: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+```
+#offsetInTime=$((30000-4000))
+offsetInTime=$((18000-4000))
+
+mainStabilizationTime=0 #$((offsetInTime + 20000)) # Time to allow rocket to stabilize after main deployment, then running SIFT.
+mainDeploymentToTouchDown=74000 # milliseconds
+siftAllowanceForStopping=10000 # Time to take away from mainDeploymentToTouchDown for stopping SIFT in backupSIFTStopTime. Larger values stop SIFT sooner.
+timeToMainDeployment=10000 # Originally we were going to start SIFT on main deployment. But we use this instead since unsure about IMU trigger on 1 g of main deployment, and there's a fallback via --time-to-main-deployment for this.
+backupSIFTStopTime="$(($mainDeploymentToTouchDown-$siftAllowanceForStopping))"
+./subscale_exe_release --time-for-main-stabilization $mainStabilizationTime --takeoff-g-force 0.5  --backup-takeoff-time 10000000  --main-deployment-g-force 1.2 --imu-data-source-path Data/subscale2/SIFT/LOG_20220130_014355.csv --time-to-main-deployment 4000 --main-descent-time 3000 --imu-data-source-time-offset $(($offsetInTime + 359768)) --sift-params '-C_edge 2 -delta_min 0.6' --extra-sift-exe-args '--video-file-data-source --video-file-data-source-path Data/subscale2/SIFT/2022-01-30_01_50_07_CST/output.mp4' --time-to-meco 500 --landing-g-force 9999999
+# IMU data source offset location: https://github.com/VADL-2022/IMU_VV/blob/main/Data/Subscale2/VN/Subscale2_Truncated_014355.csv like 10th row
+# old sift args: --main-mission-interactive
+# --verbose
+# (generate output.mp4 using `./mergeVideosInDataOutput.sh Data/subscale2/SIFT/2022-01-30_01_50_07_CST/`)
+```
+
+sift only test @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+XAUTHORITY=/home/pi/.Xauthority ./sift_exe_release_commandLine --video-file-data-source --video-file-data-source-path Data/subscale2/SIFT/2022-01-30_01_50_07_CST/output.mp4 --main-mission-interactive --main-mission --sift-params -C_edge 2 -delta_min 0.6 --sleep-before-running 0
+
+
+--- video capture testing @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+./subscale_exe_release --video-capture  --time-to-meco 1000 --time-to-apogee 5000 --main-descent-time 20000 --backup-takeoff-time 0
+
+--- sift pi testing @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+./subscale_exe_release --time-to-meco 1000 --time-to-apogee 5000 --main-descent-time 20000 --backup-takeoff-time 0 --time-for-main-stabilization 2000 --time-to-main-deployment 2000 --extra-sift-exe-args '--fps 3' --sift-params '-C_edge 2 -delta_min 0.6'
+
+
+------ launch fullscale day
+
+EVENT TIMING:
+
+SIFT:
+takeoff
+main deployment: 67.5s
+main stabalization: ~10 seconds
+landing: 106 seconds
+
+FORE:
+takeoff
+apogee: 17.6 sec
+landing: 106 sec
+
+-- extracting data: run this whole thing:
+
+[see extractDataOutput.sh]
+
+From your laptop, run these commands in `nix-shell -p coreutils`:
+missionName=fullscale1
+ip=10.3.141.1
+#FIXME: spaces not supported:
+files="$(ssh pi@$ip << EOF
+echo /home/pi/VanderbiltRocketTeam/files* | grep -o --perl-regexp '^.*'"$missionName\.tar\.gz"'$'
+EOF
+     )"
+files="$(echo "$files" | tail -1)" # tail to get past other junk like "Linux fore1 5.10.63-v8+ #1457 SMP PREEMPT Tue Sep 28 11:27:02 BST 2021 aarch64 The programs included with the Debian GNU/Linux system are free software; the exact distribution terms for each program are described in the individual files in /usr/share/doc/*/copyright. Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent permitted by applicable law"
+# Get more files
+files2="$(ssh pi@$ip << EOF
+echo /home/pi/VanderbiltRocketTeam/Data/files* | grep -o --perl-regexp '^.*'"$missionName\.tar\.gz"'$'
+EOF
+     )"
+files2="$(echo "$files2" | tail -1)"
+
+files="$files $files2"
+echo "Files: $files"
+files=$(echo "$files" | xargs -n 1 echo | awk '{print "pi@'"$ip"':"$0}')
+scp -r -p $files /Volumes/MyTestVolume/Projects/DataRocket/
+
+
+-- post fullscale1 analysis
+
+
+# Starts the SIFT ASAP at "main deployment" which is really blast charge, but 7 seconds extra due to sift start time
+./subscale_exe_release --extra-sift-exe-args '--video-file-data-source --video-file-data-source-path Data/fullscale1/sift1/Derived/output.mp4' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 7000 --takeoff-g-force 0 --main-deployment-g-force 0 --main-descent-time 28500 --time-to-meco 0 --landing-g-force 80 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/fullscale1/sift1/Derived/Trunc_Fullscale1.csv --imu-data-source-time-offset 17420
+# Paths on my laptop:
+# /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_videosTrimmedOnly_fullscale1/2022-02-19_11_31_58_CST/output.mp4
+# /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_imuAndTemperatureOnly_fullscale1_Derived/Trunc_Fullscale1.csv
+
+./subscale_exe_release --extra-sift-exe-args '--verbose --video-file-data-source --video-file-data-source-path Data/fullscale1/sift1/Derived/output.mp4' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 0 --main-deployment-g-force 0 --main-descent-time 28500 --time-to-meco 0 --landing-g-force 80 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/fullscale1/sift1/Derived/Trunc_Fullscale1.csv --imu-data-source-time-offset 17420
+
+Image 70: Blur detection: variance 0.004457; not blurry
+blur detection took 5 milliseconds
+grabbing from subscale driver interface thread...
+Linear accel NED: (8.92911; -11.1447; -14.4071) (data rows read: 1)
+judge_image: Python doesn't like this image
+arr: [-59.0806  61.9962 -46.2671]
+ffypr: [ 69.19365176 103.96088697  71.05956756]
+
+
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --video-file-data-source --video-file-data-source-path /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_videosTrimmedOnly_fullscale1/2022-02-19_11_31_58_CST/output.mp4  --main-mission-interactive
+
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --video-file-data-source --video-file-data-source-path /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_videosTrimmedOnly_fullscale1/2022-02-19_11_31_58_CST/output.mp4  --main-mission --skip-image-indices 2 2 --skip-image-indices 5 5 --skip-image-indices 7 7 --skip-image-indices 14 14 --skip-image-indices 17 19  --skip-image-indices 21 24 --skip-image-indices 32 38 --skip-image-indices 55 64  --skip-image-indices 65 88 --skip-image-indices 89 91 --skip-image-indices 94 94 --skip-image-indices 100 108 --skip-image-indices 110 110 --skip-image-indices 111 121 --skip-image-indices 122 129 --skip-image-indices 141 141
+
+nasty matches
+15 -> 16 -> 17 -> 18
+         |      | <--INVERSION of matrix.... and 33 to 38 or so
+
+2885
+2940.37-2867.58
+
+
+
+./sift_exe_release_commandLine --video-file-data-source --video-file-data-source-path /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_videosTrimmedOnly_fullscale1/2022-02-19_11_31_58_CST/output.mp4 --main-mission --skip-image-indices 1 8 --skip-image-indices 14 15 --skip-image-indices 18 24 --skip-image-indices 25 29 --skip-image-indices 32 33 --skip-image-indices 35 37 --skip-image-indices 38 41 --skip-image-indices 42 50 --skip-image-indices 51 59 --skip-image-indices 60 67 --skip-image-indices 68 70 --skip-image-indices 71 75 --skip-image-indices 76 82 --skip-image-indices 83 85 --skip-image-indices 86 88 --skip-image-indices 89 92 --skip-image-indices 94 95 --skip-image-indices 96 97 --skip-image-indices 99 111 --skip-image-indices 112 117 --skip-image-indices 118 122 --skip-image-indices 123 125 --skip-image-indices 127 130 --skip-image-indices 132 136 --skip-image-indices 139 140 --skip-image-indices 141 142 --skip-image-indices 146 147 --sift-video-output
+
+./sift_exe_release_commandLine --folder-data-source --folder-data-source-path Data/fullscale1/Derived/SIFT/ExtractedFrames --main-mission --skip-image-indices 1 8 --skip-image-indices 14 15 --skip-image-indices 18 24 --skip-image-indices 25 29 --skip-image-indices 32 33 --skip-image-indices 35 37 --skip-image-indices 38 41 --skip-image-indices 42 50 --skip-image-indices 51 59 --skip-image-indices 60 67 --skip-image-indices 68 70 --skip-image-indices 71 75 --skip-image-indices 76 82 --skip-image-indices 83 85 --skip-image-indices 86 88 --skip-image-indices 89 92 --skip-image-indices 94 95 --skip-image-indices 96 97 --skip-image-indices 99 111 --skip-image-indices 112 117 --skip-image-indices 118 122 --skip-image-indices 123 125 --skip-image-indices 127 130 --skip-image-indices 132 136 --skip-image-indices 139 140 --skip-image-indices 141 142 --skip-image-indices 146 14
+
+RUNS TOO FAST BECAUSE MATCHER FINISHES SINCE no longer waiting on readptr. this is OK AND NORMAL. need to make main wait after finishing reading all images AND !stoppedMain.
+
+inversions
+17-19
+35
+
+keep:
+55 57 61 62 63 66 74 80 
+
+make -j8 sift_exe_debug_commandLine && ./sift_exe_debug_commandLine --video-file-data-source --video-file-data-source-path /Volumes/MyTestVolume/Projects/DataRocket/files_sift1_videosTrimmedOnly_fullscale1/2022-02-19_11_31_58_CST/output.mp4 --main-mission --sift-video-output --finish-rest-always --skip-image-indices 2 3 --skip-image-indices 4 6 --skip-image-indices 7 8 --skip-image-indices 14 15 --skip-image-indices 18 21 --skip-image-indices 22 24 --skip-image-indices 25 29 --skip-image-indices 32 33 --skip-image-indices 35 37 --skip-image-indices 39 41 --skip-image-indices 42 43 --skip-image-indices 44 46 --skip-image-indices 47 50 --skip-image-indices 51 55 --skip-image-indices 56 57 --skip-image-indices 58 59 --skip-image-indices 60 61 --skip-image-indices 64 66 --skip-image-indices 67 70 --skip-image-indices 71 74 --skip-image-indices 75 80 --skip-image-indices 81 82 --skip-image-indices 83 85 --skip-image-indices 86 88 --skip-image-indices 89 92 --skip-image-indices 94 95 --skip-image-indices 96 97 --skip-image-indices 99 102 --skip-image-indices 103 105 --skip-image-indices 106 111 --skip-image-indices 112 117 --skip-image-indices 118 122 --skip-image-indices 123 125 --skip-image-indices 128 130 --skip-image-indices 132 136 --skip-image-indices 139 140 --skip-image-indices 141 142 --debug-mutex-deadlocks
+
+pi ip finder: nmap -p 22 10.16.137.0/24 | grep -i "tcp open" -B 4
+full build: git pull && git submodule update --init --recursive && make -j4 sift_exe_release_commandLine subscale_exe_release
+
+
+
+
+
+
+-- drone test 3-21-2022:
+
+./subscale_exe_release --imu-record-only &
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission
+
+-- innovation ideas
+
+sift struggles most closer to ground (maybe 100 feet? or maybe whenever main deployed in fullscale1 (late)). so:
+- TRY: ONLY RUN 1.)ROI UNDISTORT WHEN CLOSE TO THE GROUND since it'll prevent latching onto trees etc. -- and then use gyro to unrotate maybe, only if it is improved when using the unrotated manually imageset you have!  and 2.) make sift params BUMPED UP A TON so they grab LOTS of keypoints when closer to the ground -- the features seem worse and transform a lot more when closer to ground and 3.) BUMP UP FPS when close to the ground for the same reason: less good features so maybe closer keypoints are easier to match?
+
+
+frame index 122 onwards bad
+
+# BAD:
+(sleep 30; ./subscale_exe_release --imu-record-only ) & ; sleep 30 ; ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 30 --finish-rest-always | tee logasd.txt
+
+# TESTING:
+(sleep 2; echo ./subscale_exe_release --imu-record-only ) & (sleep 2 ; echo ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 30 --finish-rest-always | tee logasd.txt)
+
+# USE:
+time=60; output="log_$(hostname)_$(date "+%Y-%m-%d_%H_%M_%S_%Z").txt"; (sleep $time; ./subscale_exe_release --imu-record-only ) & (sleep $time ; ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 10 --save-first-image --finish-rest-always 2>&1 | tee "$output")
+
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --video-file-data-source --video-file-data-source-path /home/pi/VanderbiltRocketTeam/dataOutput/2022-03-27_15_36_35_CDT/output.mp4 --finish-rest-always
+
+time=30; output="log_$(hostname)_$(date "+%Y-%m-%d_%H_%M_%S_%Z").txt"; (sleep $time; ./subscale_exe_release --imu-record-only ) & (sleep $time ; ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 5 --save-first-image --finish-rest-always 2>&1 | tee "$output")
+
+
+--- hough circle detection tuning practice on partial drone test footage
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission-interactive --video-file-data-source --video-file-data-source-path Data/DroneTests/2022-03-21_19_02_14_CDT/output.mp4  --finish-rest-always
+
+--- drone test 3-28-2022:
+
+time=30; output="log_$(hostname)_$(date "+%Y-%m-%d_%H_%M_%S_%Z").txt"; (sleep $time; ./subscale_exe_release --imu-record-only ) & (sleep $time ; ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 5 --save-first-image --finish-rest-always --no-preview-window 2>&1 > >(trap '' INT; tee "$output"))
+
+/home/pi/VanderbiltRocketTeam/dataOutput/2022-03-28_18_34_07_CDT was at 300feet
+
+dataOutput/2022-03-28_18_39_25_CDT/scaled34.png was 700 feet
+
+2022-03-28_18_46_26_CDT was 500 feet
+
+dataOutput/2022-03-28_18_50_08_CDT was 500ft
+
+dataOutput/2022-03-28_18_54_34_CDT was 450ft
+
+`time=55; output="log_$(hostname)_$(date "+%Y-%m-%d_%H_%M_%S_%Z").txt"; (sleep $time; ./subscale_exe_release --imu-record-only ) & (sleep $time ; ./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission --fps 15 --save-first-image --finish-rest-always --no-preview-window 2>&1 > >(trap '' INT; tee "$output"))` was 500ft
+
+----- misc
+
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --main-mission-interactive --video-file-data-source --video-file-data-source-path Data/DroneTests/2022-03-21_19_02_14_CDT/output.mp4  --finish-rest-always --no-preview-window
+
+
+---- fullscale2 predictions
+
+based on estimated mass
+takeoff g's: 6.8g
+time to MECO: 1.6 seconds
+time to apogee: 9.22 seconds
+main deployment: 16.4 seconds (or 17.42 if 35 pounds mass, we'll see on the field)
+between main deployment and touchdown: 54.9-16.4=38.5
+(^^^^^checklist has adjusted ones for our program)
+aiming for 6 seconds for main stablization. 2.5-3 seconds to start SIFT. therefore main stabalization should be 6-2.5=3.5 seconds
+random stats for fun:
+- landing energy: 51 feet pound force
+- 33.3 pound rocket
+
+
+for one sift pi: hostname: sift2: check for drogue or apogee instead and start at drogue
+pressure increasing THEN decreasing is what brian's altimeter does to deploy drogue at apogee. (is inside the altimeter automatically says brian)
+
+
+Testing for IMU altitude changes etc:
+
+./subscale_exe_release --extra-sift-exe-args '--video-file-data-source --video-file-data-source-path Data/fullscale1/Derived/SIFT/output.mp4' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 9 --main-descent-time 28500 --time-to-meco 2200 --landing-g-force 8 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/files_sift1_imuAndTemperatureOnly_fullscale1/LOG_20220219_104353.csv --imu-data-source-time-offset 2867000 --time-to-apogee 17600 --main-deployment-altitude 800 --start-sift-at-apogee # Tip: --verbose to see live altitude data in this simulation of fullscale1 (full flight)
+
+
+REAL ARGS (not original values, originals are wrong/not matching marissa):
+--takeof
+
+22.82 seconds for sift start
+finsish in 45 seconds since sift. entire flight is 67.8 or so
+
+ls -at dataOutput | head -n 15
+
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_49_18_PM.siftlog.txt         /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_124920.csv		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-12_49_19.log.csv    /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_13_27_16_CDT		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_13_27_00_		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-124920.gps.txt		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_122338.csv		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_23_37_PM.siftlog.txt	       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_12_23_50_CDT		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-12_23_37.log.csv    /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_12_23_43_		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-122338.gps.txt		       /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+ sshpass -p 'camjet2021' scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_122305.csv                    /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift1
+
+scp -r -p  pi@sift1.local:/home/pi/VanderbiltRocketTeam/dataOutput/
+
+mkdir /Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+/Volumes/MyTestVolume/Projects/DataRocket/fullscale2
+
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_43_46_PM.siftlog.txt        /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_124347.csv		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_13_27_10_CDT		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_13_27_00_		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-12_43_47.log.csv   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-124347.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_124334.csv		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-12_43_33.log.csv   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_43_33_PM.siftlog.txt	      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-124334.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_12_35_56_CDT		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402_123453.csv		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+ sshpass -p 'camjet2021' scp -r -p  pi@sift2.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-123453.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/sift2
+
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-13_21_00.log.csv   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_01_21_00_PM.video_caplog.txt   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-132700.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-132105.LIS331.csv	      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_13_26_58_		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-132100.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_02-12_44_15.log.csv   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_12_44_37_		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-124437.gps.txt		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220402-124421.LIS331.csv	      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022-04-02_12_44_33_		      /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_44_15_PM.video_caplog.txt   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+ sshpass -p 'camjet2021' scp -r -p  pi@fore1.local:/home/pi/VanderbiltRocketTeam/dataOutput/2022_04_02_12_42_59_PM.video_caplog.txt   /Volumes/MyTestVolume/Projects/DataRocket/fullscale2/fore1
+
+-- fullscale3 preparation
+
+ORIGINAL TIMES:
+time to meco: 1.6s
+time to main deployment 16.5s
+main descent time: 33.8s
+time to apogee: 9.5s
+
+-- fullscale3 preparation (cont.)
+
+# 1 degree is the launch angle for fullscale1
+./subscale_exe_release --extra-sift-exe-args '--video-file-data-source --video-file-data-source-path Data/fullscale1/Derived/SIFT/output.mp4' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 9 --main-descent-time 28500 --time-to-meco 2200 --landing-g-force 8 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/files_sift1_imuAndTemperatureOnly_fullscale1/LOG_20220219_104353.csv --imu-data-source-time-offset 2867000 --time-to-apogee 17600 --main-deployment-altitude 800 --start-sift-at-apogee --verbose --launch-box 1 --launch-angle 'deg2rad(1)'
+
+real apogee: 4660 feet apogee
+
+# WORKS:
+./subscale_exe_release --extra-sift-exe-args '--save-first-image --video-file-data-source --video-file-data-source-path Data/fullscale1/Derived/SIFT/output.mp4 --no-sky-detection' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 9 --main-descent-time 28500 --time-to-meco 2200 --landing-g-force 8 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/files_sift1_imuAndTemperatureOnly_fullscale1/LOG_20220219_104353.csv --imu-data-source-time-offset 2867000 --time-to-apogee 17600 --main-deployment-altitude 800 --start-sift-at-apogee --verbose --launch-box 1 --launch-angle '__import__("numpy").deg2rad(1)'
+
+
+# Testing
+./subscale_exe_release         --time-to-main-deployment         17000         --time-for-main-stabilization         1000         --main-descent-time                                                                                                                                                                 33500                                                                                                                                                                               --emergency-main-deployment-g-force                                                                                                                                                 20                                                                                                                                                                                  --main-deployment-altitude                                                                                                                                                          800         --launch-box         1         --launch-angle         '__import__("numpy").deg2rad(1)'         --extra-sift-exe-args         '--no-sky-detection --fps 5 --no-preview-window --finish-rest-always --save-first-image'         --sift-params         '-C_edge 2 -delta_min 0.6 '        --takeoff-g-force         6         --landing-g-force         3         --backup-takeoff-time         0         --time-to-meco         1700         --time-to-apogee         9500         --takeoff-g-force         1         --landing-g-force         1
+
+sky detection enabled -> causes possible deadlocks. otherwise good
+
+
+grid box of launch rail: 190
+launch angle degrees: 2
+
+
+-- transfer commands (from cyberduck scp program: right click the multiple items -> copy -> sftp commands, then paste into emacs and put the cursor before them (can use C-x C-x to swap cursor to start of selection), then do: `M-x query-replace` and then `M-p` to get previous entry or just put: `
+sftp://sift1.local →  ` (C-q C-j to insert newline at the start of this string) to replace a newline and that text with a space and change sift1 to the pi needed. then press `!` to replace all occurrences after the cursor(current insertion point)) : https://github.com/iterate-ch/cyberduck , https://cyberduck.io/ )
+
+hostname=fore1
+ssh pi@$hostname.local stat /home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_16-12_02_52.log.csv /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416-120253.LIS331.csv /home/pi/VanderbiltRocketTeam/dataOutput/2022_04_16_12_02_51_PM.video_caplog.txt /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_33_ /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_24_ > Data/fullscale3/ctimes_$hostname.txt
+
+hostname=fore2
+ssh pi@$hostname.local stat /home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_16-12_01_16.log.csv /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416-120118.LIS331.csv /home/pi/VanderbiltRocketTeam/dataOutput/2022_04_16_12_01_16_PM.video_caplog.txt /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_10_47_58_CDT /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_10_47_53_CDT > Data/fullscale3/ctimes_$hostname.txt
+
+hostname=sift2
+ssh pi@$hostname.local stat /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416_114053.csv /home/pi/VanderbiltRocketTeam/dataOutput/2022_04_16_11_40_52_AM.siftlog.txt /home/pi/VanderbiltRocketTeam/dataOutput/knnMatcher_04_16_2022_12_12_55 /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_35_CDT /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_25_ /home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_16-11_40_52.log.csv /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416-114053.gps.txt > Data/fullscale3/ctimes_$hostname.txt
+
+hostname=sift1
+ssh pi@$hostname.local stat /home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_16-11_39_37.log.csv /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416_113937.csv /home/pi/VanderbiltRocketTeam/dataOutput/2022_04_16_11_39_36_AM.siftlog.txt /home/pi/VanderbiltRocketTeam/dataOutput/knnMatcher_04_16_2022_12_10_09 /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_43_CDT /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_24_ /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416-113937.gps.txt  > Data/fullscale3/ctimes_$hostname.txt
+
+
+# new commands: recursive stat
+hostname=sift1
+files="/home/pi/VanderbiltRocketTeam/dataOutput/temperature_2022_04_16-11_39_37.log.csv /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416_113937.csv /home/pi/VanderbiltRocketTeam/dataOutput/2022_04_16_11_39_36_AM.siftlog.txt /home/pi/VanderbiltRocketTeam/dataOutput/knnMatcher_04_16_2022_12_10_09 /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_43_CDT /home/pi/VanderbiltRocketTeam/dataOutput/2022-04-16_12_08_24_ /home/pi/VanderbiltRocketTeam/dataOutput/LOG_20220416-113937.gps.txt"
+ssh pi@$hostname.local find $files -exec 'stat {} \;' > Data/fullscale3/ctimes_all_$hostname.txt
+# better emacs command: M-x query-replace-regexp or replace-regexp and then do `
+sftp\:\/\/.*\.local →  `
+
+
+./sift_exe_release_commandLine --sift-params -delta_min 0.6 -C_edge 2 --video-file-data-source --video-file-data-source-path Data/fullscale3/sift1/2022-04-16_12_08_43_CDT/output.mp4  --main-mission-interactive
+
+python3 knn_matcher2.py  1 1 0 0 Data/fullscale3/sift1/2022-04-16_12_08_43_CDT/output.mp4  1
+
+./subscale_exe_release --extra-sift-exe-args '--save-first-image --video-file-data-source --video-file-data-source-path Data/fullscale1/Derived/SIFT/output.mp4 --no-sky-detection' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 9 --main-descent-time 28500 --time-to-meco 2200 --landing-g-force 8 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/files_sift1_imuAndTemperatureOnly_fullscale1/LOG_20220219_104353.csv --imu-data-source-time-offset 2867000 --time-to-apogee 17600 --main-deployment-altitude 800 --start-sift-at-apogee --launch-box 1 --launch-angle '__import__("numpy").deg2rad(1)' --python-sift
+
+./subscale_exe_release --extra-sift-exe-args '--save-first-image --video-file-data-source --video-file-data-source-path Data/fullscale1/Derived/SIFT/output.mp4' --sift-params '-C_edge 2 -delta_min 0.6' --backup-takeoff-time 0 --time-to-main-deployment 67500 --time-for-main-stabilization 0 --takeoff-g-force 9 --main-descent-time 28500 --time-to-meco 2200 --landing-g-force 8 --emergency-main-deployment-g-force 16 --imu-data-source-path Data/files_sift1_imuAndTemperatureOnly_fullscale1/LOG_20220219_104353.csv --imu-data-source-time-offset 2867000 --time-to-apogee 17600 --main-deployment-altitude 800 --start-sift-at-apogee --launch-box 1 --launch-angle '__import__("numpy").deg2rad(1)' --python-sift
+
+# fullscale3 sim:
+#extrasNvm="--no-sky-detection --fps 15 --no-preview-window --finish-rest-always"
+oldJunk="--imu-data-source-time-offset 1651040 --imu-data-source-path Data/fullscale3/sift2/LOG_20220416_114053.csv"
+newJunk="--imu-data-source-time-offset 0 --imu-data-source-path Data/fullscale3/sift2/Derived/Book1.csv"
+# $extrasNvm $extras
+extrasOldArgs="--main-deployment-altitude 800" extras="--frameskip 3" ./subscale_exe_release --extra-sift-exe-args '--show-preview-window --save-first-image --video-file-data-source --video-file-data-source-path Data/fullscale3/sift2/2022-04-16_12_08_35_CDT/output.mp4' --imu-data-source-time-offset 1651040 --imu-data-source-path Data/fullscale3/sift2/LOG_20220416_114053.csv  $newJunk --time-to-main-deployment 	17200 	--time-for-main-stabilization 	1000 	--main-descent-time 	33500 	--emergency-main-deployment-g-force 	20 	--main-deployment-altitude 800 	--launch-box 	149 	--launch-angle 	'__import__("numpy").deg2rad(5)' 	 	--sift-params 	'-C_edge 2 -delta_min 0.6' 	--takeoff-g-force 	6 	--landing-g-force 	3 	--backup-takeoff-time 	0 	--time-to-meco 	1700 	--time-to-apogee 	9500 --wind-speed '(10,-0.5)' --launch-rail-gps-coords "(34.8946331, -86.6166411)" --python-sift --no-imu-recon-sleep --show-landing-pos-on-completion --intermediate-image-path 'driver/vlcsnap-2022-04-05-15h36m34s616.png' --mc '__import__("numpy").matrix([[-0.18071, -0.77495, 573.08481], [0.77063, 0.06183, -34.54974], [-0.00005, -0.00003, 1.00000]])'
+# ^ Note: launch angle of 4 is only because oz does a weird thing. 2 degrees is actual.
+
+./subscale_exe_release --extra-sift-exe-args '--frameskip 3 --show-preview-window --save-first-image --video-file-data-source --video-file-data-source-path Data/fullscale3/sift2/2022-04-16_12_08_35_CDT/output.mp4' --imu-data-source-time-offset 1651040 --imu-data-source-path Data/fullscale3/sift2/LOG_20220416_114053.csv  $newJunk --time-to-main-deployment 	17200 	--time-for-main-stabilization 	1000 	--main-descent-time 	33500 	--emergency-main-deployment-g-force 	20 	--main-deployment-altitude 800 	--launch-box 	149 	--launch-angle 	'__import__("numpy").deg2rad(5)' 	 	--sift-params 	'-C_edge 2 -delta_min 0.6' 	--takeoff-g-force 	6 	--landing-g-force 	3 	--backup-takeoff-time 	0 	--time-to-meco 	1700 	--time-to-apogee 	9500 --wind-speed '(10,-0.5)' --launch-rail-gps-coords "(34.8946331, -86.6166411)" --python-sift --no-imu-recon-sleep --show-landing-pos-on-completion --intermediate-image-path 'driver/vlcUndist.png' --mc '__import__("numpy").matrix([[-0.18071, -0.77495, 573.08481], [0.77063, 0.06183, -34.54974], [-0.00005, -0.00003, 1.00000]])'
+
+
+launch day:
+no frame skip because camera is 5 fps natively
+                                   v- change this wind speed
+guestimate:
+bash launch.sh 149 '__import__("numpy").deg2rad(5)' "(10,-0.5)" "(34.8946331, -86.6166411)"
+"(36.189886, -86.155366)"
+- oz launch day gps: "(34.8946331, -86.6166411)"
+- launch angle: 5 or whatever they say

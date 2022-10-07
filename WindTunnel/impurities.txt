@@ -1,0 +1,4 @@
+sudo pip3 install adafruit-circuitpython-max31855
+sudo pip3 install adafruit-blinka
+
+# `sudo raspi-config` -> interface options -> SPI -> enable
