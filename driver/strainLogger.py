@@ -18,7 +18,7 @@ pi.set_mode(26, pigpio.INPUT) # Set pin 26 to output
 
 # Initialize CSV file for recording IMU data ########################################
 timestr = time.strftime("%Y%m%d-%H%M%S")
-my_log = "../dataOutput/LOG_" + timestr + ".StrainVoltage.csv"
+my_log = "dataOutput/LOG_" + timestr + ".StrainVoltage.csv"
 file_name=my_log
 with open(my_log, 'w', newline='') as file:
     new_file = writer(file)
