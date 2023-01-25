@@ -30,7 +30,8 @@
 #
 
 import config
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
+import pigpio
 
 # gain
 ADS1263_GAIN = {
@@ -177,31 +178,31 @@ class ADS1263:
 
     # Hardware reset
     def ADS1263_reset(self):
-        config.digital_write(self.rst_pin, GPIO.HIGH)
+        config.digital_write(self.rst_pin, pigpio.HIGH)
         config.delay_ms(200)
-        config.digital_write(self.rst_pin, GPIO.LOW)
+        config.digital_write(self.rst_pin, pigpio.LOW)
         config.delay_ms(200)
-        config.digital_write(self.rst_pin, GPIO.HIGH)
+        config.digital_write(self.rst_pin, pigpio.HIGH)
         config.delay_ms(200)
     
     
     def ADS1263_WriteCmd(self, reg):
-        config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
+        config.digital_write(self.cs_pin, pigpio.LOW)#cs  0
         config.spi_writebyte([reg])
-        config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
+        config.digital_write(self.cs_pin, pigpio.HIGH)#cs 1
     
     
     def ADS1263_WriteReg(self, reg, data):
-        config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
+        config.digital_write(self.cs_pin, pigpio.LOW)#cs  0
         config.spi_writebyte([ADS1263_CMD['CMD_WREG'] | reg, 0x00, data])
-        config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
+        config.digital_write(self.cs_pin, pigpio.HIGH)#cs 1
         
         
     def ADS1263_ReadData(self, reg):
-        config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
+        config.digital_write(self.cs_pin, pigpio.LOW)#cs  0
         config.spi_writebyte([ADS1263_CMD['CMD_RREG'] | reg, 0x00])
         data = config.spi_readbytes(1)
-        config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
+        config.digital_write(self.cs_pin, pigpio.HIGH)#cs 1
         return data
 
     
@@ -389,14 +390,14 @@ class ADS1263:
         
     # Read ADC data
     def ADS1263_Read_ADC_Data(self):
-        config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
+        config.digital_write(self.cs_pin, pigpio.LOW)#cs  0
         while(1):
             config.spi_writebyte([ADS1263_CMD['CMD_RDATA1']])
             # config.delay_ms(10)
             if(config.spi_readbytes(1)[0] & 0x40 != 0):
                 break
         buf = config.spi_readbytes(5)
-        config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
+        config.digital_write(self.cs_pin, pigpio.HIGH)#cs 1
         read  = (buf[0]<<24) & 0xff000000
         read |= (buf[1]<<16) & 0xff0000
         read |= (buf[2]<<8) & 0xff00
@@ -411,14 +412,14 @@ class ADS1263:
     # Read ADC2 data
     def ADS1263_Read_ADC2_Data(self):
         read = 0
-        config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
+        config.digital_write(self.cs_pin, pigpio.LOW)#cs  0
         while(1):
             config.spi_writebyte([ADS1263_CMD['CMD_RDATA2']])
             # config.delay_ms(10)
             if(config.spi_readbytes(1)[0] & 0x80 != 0):
                 break
         buf = config.spi_readbytes(5)
-        config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
+        config.digital_write(self.cs_pin, pigpio.HIGH)#cs 1
         read |= (buf[0]<<16) & 0xff0000
         read |= (buf[1]<<8) & 0xff00
         read |= (buf[2]) & 0xff
