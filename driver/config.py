@@ -32,6 +32,8 @@
 #import os
 import sys
 import time
+import spidev
+import pigpio
 
 class RaspberryPi:
     # Pin definition
@@ -41,8 +43,6 @@ class RaspberryPi:
 
     def __init__(self):
     # SPI device, bus = 0, device = 0
-        import spidev
-        import pigpio
 
         self.GPIO = pigpio.pi()
         self.SPI = spidev.SpiDev(0, 0)
